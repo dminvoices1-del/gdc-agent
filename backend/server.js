@@ -16,13 +16,18 @@ app.post("/chat", async (req, res) => {
   try {
     const { messages } = req.body;
 
+    // Guard clause: make sure messages exist
+    if (!messages || !messages.length) {
+      return res.status(400).json({ error: "No messages provided" });
+    }
+
     // Use your preconfigured agent
     const response = await openai.responses.create({
       prompt: {
         id: "pmpt_696a4bf1bb148193ac5747dacd112b900d1b5e4bd36dcf46",
         version: "2",
       },
-      input: messages[messages.length - 1]?.content || ""
+      input: messages[messages.length - 1].content
     });
 
     const reply = response.output[0].content[0].text || "(No response)";
