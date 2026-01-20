@@ -30,7 +30,8 @@ app.post("/chat", async (req, res) => {
       input: messages[messages.length - 1].content
     });
 
-    const reply = response.output[0].content[0].text || "(No response)";
+   const reply = response?.output?.[0]?.content?.[0]?.text || "(No response from AI)";
+
 
     res.json({ reply });
   } catch (err) {
