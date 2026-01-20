@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Login - Teckentrup AI Assistant</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="login-container">
+    <h1>Login</h1>
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button id="loginBtn">Login</button>
+    <div id="error" style="color:red;margin-top:10px;"></div>
+  </div>
+
+  <script type="module">
+    import { auth } from "./firebase-config.js";
+    import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const emailEl = document.getElementById("email");
+    const passwordEl = document.getElementById("password");
+    const loginBtn = document.getElementById("loginBtn");
+    const errorEl = document.getElementById("error");
+
+    loginBtn.addEventListener("click", async () => {
+      const email = emailEl.value.trim();
+      const password = passwordEl.value.trim();
+      errorEl.textContent = "";
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        // Redirect to main app after login
+        window.location.href = "index.html";
+      } catch (err) {
+        errorEl.textContent = err.message;
+      }
+    });
+  </script>
+</body>
+</html>

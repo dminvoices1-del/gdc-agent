@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Teckentrup AI Assistant</title>
+
+    <link rel="stylesheet" href="style.css">
+
+  </head>
+  <body>
+    <div class="app">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="logo">
+            <img src="images/Teckentrup-logo-white.png" alt="Teckentrup Logo" />
+          </div>
+          <!-- Logo placeholder, T for Teckentrup -->
+          <div>
+            <h1>Teckentrup Agent</h1>
+            <p>Powered by AI</p>
+          </div>
+        </div>
+
+        <div class="user-info">
+          <div
+            style="
+              font-size: 12px;
+              color: var(--muted);
+              font-weight: 600;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            "
+          >
+            Signed in as
+          </div>
+          <div class="user-email" id="userEmail">—</div>
+          <button class="logout-btn" id="logoutBtn">Log out</button>
+        </div>
+
+        <div class="settings">
+          <button id="clearBtn">Clear chat</button>
+          <button id="downloadBtn">Download transcript</button>
+        </div>
+
+        <div class="sidebar-footer">
+          <div style="font-weight: 500">Powered by AI • Teckentrup</div>
+        </div>
+      </aside>
+
+      <!-- CHAT PANEL -->
+      <main class="panel">
+        <div class="panel-header">
+          <div>
+            <div class="title">Teckentrup Assistant</div>
+            <div class="subtitle">Ask anything — private & secure</div>
+          </div>
+          <div id="status">Ready</div>
+        </div>
+
+        <div class="messages" id="messages"></div>
+
+        <div class="composer">
+          <input
+            id="userInput"
+            placeholder="Type your question…"
+            autocomplete="off"
+          />
+          <button id="sendBtn">Send</button>
+        </div>
+      </main>
+    </div>
+
+    <script type="module">
+
+import { auth } from "./firebase-config.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+let currentUser = null;
+
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    // Not logged in → redirect to login page
+    window.location.href = "login.html";
+    return;
+  }
+  currentUser = user;
+  // Optional: show user email in sidebar
+  const userEmailEl = document.getElementById("userEmail");
+  if (userEmailEl) userEmailEl.textContent = user.email || user.uid;
+});
+
+  let conversationHistory = [];
+  const MAX_HISTORY = 5;
+
+
+  const BACKEND_URL = "http://localhost:3000/chat";
+  const CHUNK_SIZE = 32;
+  const CHUNK_DELAY = 40;
+
+  const messagesEl = document.getElementById("messages");
+  const inputEl = document.getElementById("userInput");
+  const sendBtn = document.getElementById("sendBtn");
+  const statusEl = document.getElementById("status");
+
+  const clearBtn = document.getElementById("clearBtn");
+  const downloadBtn = document.getElementById("downloadBtn");
+
+  clearBtn.addEventListener("click", () => {
+    messagesEl.innerHTML = "";
+  });
+
+  downloadBtn.addEventListener("click", () => {
+    const text = Array.from(messagesEl.querySelectorAll(".bubble"))
+      .map((b) => b.textContent)
+      .join("\n\n---\n\n");
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "transcript.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  function appendBubble(text, sender) {
+    const el = document.createElement("div");
+    el.className = "bubble " + (sender === "user" ? "user" : "assistant");
+
+    const avatar = document.createElement("div");
+    avatar.className = "avatar";
+    if (sender === "assistant") {
+      avatar.innerHTML = `<img src="images/Teckentrup-Agent1.png" alt="AI" />`;
+    } else {
+      const initial = currentUser.email.charAt(0).toUpperCase();
+      avatar.innerHTML = `<div class="user-avatar-circle">${initial}</div>`;
+    }
+    el.appendChild(avatar);
+
+    const content = document.createElement("div");
+    content.textContent = text || "";
+    el.appendChild(content);
+
+    messagesEl.appendChild(el);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return el;
+  }
+
+  let typingEl = null;
+  function showTyping() {
+    if (typingEl) return;
+    typingEl = document.createElement("div");
+    typingEl.className = "thinking";
+    typingEl.innerHTML =
+      '<span class="dots"></span><span class="dots"></span>' +
+      '<span class="dots"></span><span>Assistant is thinking...</span>';
+    messagesEl.appendChild(typingEl);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+  function hideTyping() {
+    if (!typingEl) return;
+    typingEl.remove();
+    typingEl = null;
+  }
+
+  async function streamTextToElement(fullText, el) {
+    let i = 0;
+    while (i < fullText.length) {
+      const chunk = fullText.slice(i, i + CHUNK_SIZE);
+      const contentDiv = el.querySelector("div:nth-child(2)");
+      contentDiv.textContent += chunk;
+
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      i += CHUNK_SIZE;
+      await new Promise((r) => setTimeout(r, CHUNK_DELAY));
+    }
+  }
+
+  async function sendMessage() {
+    const text = inputEl.value.trim();
+    if (!text) return;
+    inputEl.value = "";
+
+    conversationHistory.push({ role: "user", content: text });
+    if (conversationHistory.length > MAX_HISTORY) conversationHistory.shift();
+
+    appendBubble(text, "user");
+    statusEl.textContent = "Sending…";
+    showTyping();
+
+    try {
+      const resp = await fetch(BACKEND_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: conversationHistory }),
+      });
+
+      if (!resp.ok) {
+        const textErr = await resp.text();
+        hideTyping();
+        statusEl.textContent = "Error";
+        appendBubble("Server error: " + (textErr || resp.statusText), "assistant");
+        return;
+      }
+
+      const data = await resp.json();
+      const assistantText = data.reply || "(No response)";
+
+      conversationHistory.push({ role: "assistant", content: assistantText });
+      if (conversationHistory.length > MAX_HISTORY) conversationHistory.shift();
+
+      hideTyping();
+      statusEl.textContent = "Receiving…";
+
+      const bubble = appendBubble("", "assistant");
+      await streamTextToElement(assistantText, bubble);
+
+      statusEl.textContent = "Ready";
+    } catch (err) {
+      hideTyping();
+      statusEl.textContent = "Error";
+      appendBubble("Error: " + (err.message || err), "assistant");
+      console.error(err);
+    }
+  }
+
+  sendBtn.addEventListener("click", sendMessage);
+  inputEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  const logoutBtn = document.getElementById("logoutBtn");
+
+logoutBtn.addEventListener("click", async () => {
+  await signOut(auth);
+  window.location.href = "login.html";
+});
+
+</script>
+
+  </body>
+</html>
