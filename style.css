@@ -1,17 +1,29 @@
 
       /* ---------- Branding Colors (Teckentrup / CarTeck) ---------- */
       :root {
-        --bg: #ffffff;
-        --card: #f8f9fa;
-        --muted: #6c757d;
-        --accent: #cb181c; /* A warm orange - custom, approximating Teckentrup’s energetic accent */
-        --primary: #2c3e50; /* Dark blue-grey, clean and professional */
-        --border: #e9ecef;
-        --text: #212529;
-        --light-accent: rgba(232, 119, 34, 0.1);
-        --avatar-bg: #2c3e50; /* for avatar background */
-        --avatar-fg: #ffffff; /* for avatar text/icon */
+        /* Brand Red */
+        --brand: #cb181c;
+        --brand-dark: #a51418;
+        --brand-light: #cb181b42; /* soft but visible red tint */
+
+        /* Neutrals */
+        --bg: #f4f5f7;          /* light grey background for app */
+        --card: #ffffff;         /* card / panel background */
+        --text: #1f2933;         /* dark grey for text */
+        --muted: #6b7280;        /* secondary text / meta */
+        --border: #d1d5db;       /* neutral borders */
+
+        /* Sidebar */
+        --sidebar-bg: #fef2f2;   /* soft red-ish tint to distinguish sidebar */
+        --sidebar-text: #1f2933; /* primary text in sidebar */
+        --sidebar-muted: #6b7280; 
+
+        /* UI / Accent */
+        --avatar-bg: #1f2933;
+        --avatar-fg: #ffffff;
       }
+
+
 
       .logo {
         width: 48px;
@@ -24,7 +36,21 @@
         width: 100%;
         height: 100%;
         object-fit: contain;
+        background-color: #e9ecef;
       }
+
+      #sidebar-title {
+        color: var(--brand);
+        font-size: 20px;
+        font-weight: 700;
+      }
+
+      #sidebar-subtitle {
+        color: var(--sidebar-muted);
+        font-size: 14px;
+        font-weight: 500;
+      }
+
 
       html,
       body {
@@ -60,14 +86,14 @@
 
       /* ---------- Sidebar ---------- */
       .sidebar {
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: 16px;
+        background: var(--sidebar-bg);
+        border-right: 6px solid var(--brand-light);
+        border-radius: 0px;
         padding: 24px;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08);
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        gap: 24px;
       }
 
       .brand {
@@ -109,8 +135,8 @@
         margin-top: 4px;
         padding: 16px;
         border-radius: 12px;
-        background: var(--light-accent);
-        border: 1px solid rgba(232, 119, 34, 0.3);
+        background: var(--brand-soft);
+        border: 1px solid var(--brand);
         display: flex;
         flex-direction: column;
         gap: 8px;
@@ -128,16 +154,16 @@
         padding: 10px 18px;
         border-radius: 8px;
         background: white;
-        border: 1px solid var(--accent);
-        color: var(--accent);
+        border: 1px solid var(--brand);
+        color: var(--brand);
         cursor: pointer;
-        font-weight: 600;
+        font-weight: 900;
         font-size: 14px;
         transition: all 0.2s ease;
       }
 
       .logout-btn:hover {
-        background: var(--accent);
+        background: var(--brand-dark);
         color: white;
       }
 
@@ -151,20 +177,20 @@
       .settings button {
         padding: 12px 16px;
         border-radius: 10px;
-        border: 1px solid var(--border);
-        background: white;
-        color: var(--primary);
+        border: 1px solid var(--brand);
+        background: var(--card);
+        color: var(--brand-dark);
         text-align: left;
         cursor: pointer;
-        font-weight: 500;
+        font-weight: 900;
         font-size: 14px;
         transition: all 0.2s ease;
       }
 
       .settings button:hover {
-        background: var(--card);
-        border-color: var(--accent);
-        color: var(--accent);
+        background: var(--brand-dark);
+        border-color: var(--brand-dark);
+        color: white;
       }
 
       .sidebar-footer {
@@ -174,6 +200,7 @@
         line-height: 1.5;
       }
 
+    
       /* ---------- Chat Panel ---------- */
       .panel {
         display: flex;
@@ -182,7 +209,7 @@
         border-radius: 16px;
         overflow: hidden;
         border: 1px solid var(--border);
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
       }
 
       .panel-header {
@@ -190,18 +217,14 @@
         align-items: center;
         justify-content: space-between;
         padding: 20px 28px;
-        border-bottom: 2px solid var(--light-accent);
-        background: linear-gradient(
-          90deg,
-          var(--light-accent) 0%,
-          rgba(255, 255, 255, 1) 100%
-        );
+        background: var(--card);
+        border-bottom: 6px solid var(--brand-light);
       }
 
       .title {
         font-weight: 700;
-        color: var(--primary);
-        font-size: 20px;
+        color: var(--brand-dark);
+        font-size: 22px;
       }
 
       .subtitle {
@@ -215,8 +238,8 @@
         padding: 8px 16px;
         border-radius: 20px;
         font-weight: 600;
-        background: var(--light-accent);
-        color: var(--accent);
+        background: var(--brand-soft);
+        color: var(--brand);
       }
 
       .messages {
@@ -226,7 +249,7 @@
         display: flex;
         flex-direction: column;
         gap: 16px;
-        background: var(--card);
+        background: var(--bg);
       }
 
       .bubble {
@@ -246,7 +269,7 @@
 
       .bubble.user {
         align-self: flex-end;
-        background: linear-gradient(135deg, var(--accent) 0%, #f89e64 100%);
+        background: var(--brand);
         color: white;
         border-bottom-right-radius: 4px;
         font-weight: 500;
@@ -254,7 +277,7 @@
 
       .bubble.assistant {
         align-self: flex-start;
-        background: white;
+        background: var(--card);
         color: var(--text);
         border: 1px solid var(--border);
         border-bottom-left-radius: 4px;
@@ -325,7 +348,7 @@
         border-top: 2px solid var(--light-accent);
         display: flex;
         gap: 12px;
-        background: var(--bg);
+        background: var(--card);
       }
 
       .composer input {
@@ -341,26 +364,27 @@
 
       .composer input:focus {
         outline: none;
-        border-color: var(--accent);
-        background: white;
+        border-color: var(--brand);
+        background: #fff;
       }
 
       .composer button {
         padding: 14px 28px;
         border-radius: 12px;
         border: none;
-        background: linear-gradient(135deg, var(--accent) 0%, #f89e64 100%);
+        background: var(--brand);
         color: white;
         font-weight: 700;
         font-size: 15px;
         cursor: pointer;
-        box-shadow: 0 4px 12px rgba(232, 119, 34, 0.3);
+        box-shadow: 0 4px 12px rgba(203, 24, 28, 0.3);
         transition: all 0.2s ease;
       }
 
       .composer button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(232, 119, 34, 0.4);
+        background: var(--brand-dark);
+        box-shadow: 0 6px 16px rgba(203, 24, 28, 0.4);
       }
 
       .composer button:active {
