@@ -1,43 +1,57 @@
 import express from "express";
 import cors from "cors";
-import 'dotenv/config';
+import "dotenv/config";
 import OpenAI from "openai";
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.use(cors());
-app.use(express.json()); // parse JSON body
+app.use(express.json());
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
-// POST /chat endpoint
 app.post("/chat", async (req, res) => {
   try {
     const { messages } = req.body;
 
-    // Guard clause: make sure messages exist
-    if (!messages || !messages.length) {
+    if (!Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ error: "No messages provided" });
     }
 
-    // Use your preconfigured agent
     const response = await openai.responses.create({
       prompt: {
         id: "pmpt_696a4bf1bb148193ac5747dacd112b900d1b5e4bd36dcf46",
-        version: "2",
+        version: "3",
       },
-      input: messages[messages.length - 1].content
+      input: messages[messages.length - 1].content,
     });
 
-   const reply = response?.output?.[0]?.content?.[0]?.text || "(No response from AI)";
+    // Safely extract text output (handles complex agent responses)
+    let reply = "(No response from AI)";
+    const output = response?.output ?? [];
 
+    for (const item of output) {
+      if (!item.content) continue;
+
+      const textBlocks = item.content
+        .filter(c => c.type === "output_text" && c.text)
+        .map(c => c.text);
+
+      if (textBlocks.length) {
+        reply = textBlocks.join("\n\n");
+        break;
+      }
+    }
 
     res.json({ reply });
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message || "Something went wrong" });
+    console.error("Chat error:", err);
+    res.status(500).json({ error: "AI request failed" });
   }
 });
 
-app.listen(port, () => console.log(`Server running at http://localhost:${port}`));
+app.listen(port);
