@@ -9,6 +9,90 @@
 <body>
   <div class="login-container">
     <h1>GDC AI Agent</h1>
+
+    <input
+      type="email"
+      id="email"
+      placeholder="Email"
+      autocomplete="email"
+    />
+
+    <input
+      type="password"
+      id="password"
+      placeholder="Password"
+      autocomplete="current-password"
+    />
+
+    <button id="loginBtn">Login</button>
+
+    <div id="error" role="alert"></div>
+  </div>
+
+  <script type="module">
+    import { auth } from "./firebase-config.js";
+    import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const emailEl = document.getElementById("email");
+    const passwordEl = document.getElementById("password");
+    const loginBtn = document.getElementById("loginBtn");
+    const errorEl = document.getElementById("error");
+
+    async function handleLogin() {
+      const email = emailEl.value.trim();
+      const password = passwordEl.value.trim();
+      errorEl.textContent = "";
+
+      if (!email || !password) {
+        errorEl.textContent = "Please enter both email and password.";
+        return;
+      }
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        window.location.href = "index.html";
+      } catch (err) {
+        // Friendly error messages
+        if (
+          err.code === "auth/invalid-credential" ||
+          err.code === "auth/wrong-password" ||
+          err.code === "auth/user-not-found"
+        ) {
+          errorEl.textContent = "Incorrect email or password.";
+        } else {
+          errorEl.textContent = "Login failed. Please try again.";
+        }
+      }
+    }
+
+    // Button click
+    loginBtn.addEventListener("click", handleLogin);
+
+    // Press Enter in either field
+    [emailEl, passwordEl].forEach((input) => {
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          handleLogin();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Login - Teckentrup AI Assistant</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="login-container">
+    <h1>GDC AI Agent</h1>
     <input type="email" id="email" placeholder="Email" />
     <input type="password" id="password" placeholder="Password" />
     <button id="loginBtn">Login</button>
@@ -39,4 +123,4 @@
     });
   </script>
 </body>
-</html>
+</html> -->
