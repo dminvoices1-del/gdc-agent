@@ -26,7 +26,7 @@ app.post("/chat", async (req, res) => {
         id: "pmpt_696a4bf1bb148193ac5747dacd112b900d1b5e4bd36dcf46",
         version: "3",
       },
-      input: messages[messages.length - 1].content,
+      input: messages,
     });
 
     // Safely extract text output (handles complex agent responses)
