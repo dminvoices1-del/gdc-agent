@@ -112,10 +112,10 @@
         align-items: center;
         gap: 12px;
         margin-bottom: 150px;
-        border-bottom: 2px solid white;
+        border: 2px solid var(--light-accent);
         /* background-color: white; */
         padding: 12px;
-        border-radius: 0px;
+        border-radius: 8px;
       }
 
       .logo {
